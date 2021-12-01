@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guess The Weekday!</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet" />
+    <style>
+      html {
+        margin: 0;
+        font-size: 20px;
+        font-family: "Roboto", sans-serif;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+      }
+      h1 {
+        text-align: center;
+      }
+      p {
+        margin: 2rem;
+        margin-top: 0;
+        line-height: 1.3rem;
+        max-width: 800px;
+      }
+      #radios {
+        font-size: 16px;
+        margin-bottom: 1em;
+      }
+      #dateDisplay {
+        font-size: 30px;
+      }
+      #dayBtnsWrap {
+        margin-top: 1rem;
+        margin: 1rem auto;
+        width: 100%;
+        max-width: 800px;
+        display: flex;
+        flex-flow: row wrap;
+        font-family: "Roboto", sans-serif;
+        justify-content: center;
+        align-items: center;
+      }
+      #dayBtnsWrap > button {
+        box-sizing: border-box;
+        font-size: 18px;
+        padding: 10px;
+        width: 13%;
+        min-width: max-content;
+        background-color: #ddd;
+        border: 2px solid black;
+        margin: 0.5%;
+        cursor: pointer;
+      }
+      @media (max-width: 500px) {
+        #dayBtnsWrap {
+          flex-flow: column nowrap;
+        }
+        #dayBtnsWrap > button {
+          width: 10rem;
+          margin: 2px;
+        }
+      }
+      .wrong {
+        animation-name: wrong;
+        animation-duration: 0.25s;
+      }
+      @keyframes wrong {
+        from {
+          background-color: #f00;
+        }
+        to {
+          background-color: #ddd;
+        }
+      }
+      .correct {
+        animation-name: correct;
+        animation-duration: 0.25s;
+      }
+      @keyframes correct {
+        from {
+          background-color: #0f0;
+        }
+        to {
+          background-color: #ddd;
+        }
+      }
+
+      #forkMe {
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="https://github.com/EdricY"
+      ><img
+        id="forkMe"
+        loading="lazy"
+        width="149"
+        height="149"
+        src="https://github.blog/wp-content/uploads/2008/12/forkme_right_gray_6d6d6d.png?resize=149%2C149"
+        class="attachment-full size-full"
+        alt="Fork me on GitHub"
+        data-recalc-dims="1"
+    /></a>
+    <h1>Guess The Weekday!</h1>
+    <div id="dateDisplay"></div>
+    <div id="radios">
+      <input type="radio" id="futureOnly" name="range" onchange="setNewRandomDay()" />
+      <label for="futureOnly">Future Only</label>
+      <input type="radio" id="pastOnly" name="range" onchange="setNewRandomDay()" />
+      <label for="pastOnly">Past Only</label>
+      <input type="radio" id="fullRange" name="range" checked onchange="setNewRandomDay()" />
+      <label for="fullRange">Both</label>
+    </div>
+    <div>Right: <span id="correctDisplay">0</span>&nbsp;&nbsp;&nbsp; Wrong: <span id="wrongDisplay">0</span></div>
+    <div id="dayBtnsWrap"></div>
+    <div>How do I do this?</div>
+    <p>
+      The <a href="https://en.wikipedia.org/wiki/Doomsday_rule">Doomsday Rule</a> is an algorithm that makes computing the day of the week for a given
+      date possible (and easy). Every year has an "anchor" day of the week, or "doomsday" according to Conway, where many easy-to-remember dates fall.
+      Memorize those dates, learn to compute the anchor, and you, too, can count the days until doomsday like a pro.
+      <a href="https://youtu.be/z2x3SSBVGJU">Numberphile</a> recently put out a video about this, and
+      <a href="https://youtu.be/eSpW4I5moiA">Mike Boyd</a> just put out a great video showcasing how easy it is to learn. Also see
+      <a href="https://youtu.be/714LTMNJy5M">It's Okay To Be Smart</a>.
+    </p>
+  </body>
+
+  <script>
+    // const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const dateDisplay = document.getElementById("dateDisplay");
+    const dayBtnsWrap = document.getElementById("dayBtnsWrap");
+    const correctDisplay = document.getElementById("correctDisplay");
+    const wrongDisplay = document.getElementById("wrongDisplay");
+    const futureOnly = document.getElementById("futureOnly");
+    const pastOnly = document.getElementById("pastOnly");
+    const fullRange = document.getElementById("fullRange");
+    const WEEKDAYS = getWeekdaysArray();
+    let theDate = new Date(Math.random() * Date.now());
+    let correct = 0;
+    let wrong = 0;
+
+    setNewRandomDay();
+
+    function getWeekdaysArray() {
+      let x = new Date("11/27/2021"); // a saturday
+      const arr = [];
+      for (let i = 0; i < 7; i++) {
+        x.setDate(x.getDate() + 1);
+        arr.push(getWeekday(x));
+      }
+      return arr;
+    }
+
+    for (let day of WEEKDAYS) {
+      let btn = document.createElement("button");
+      btn.innerHTML = day;
+      btn.id = day;
+      btn.onclick = () => guessDay(day);
+      dayBtnsWrap.appendChild(btn);
+    }
+
+    function getFormattedDate(date) {
+      // const year = date.getFullYear();
+      // const month = date.toLocaleDateString('default', { month: 'long' });
+      let options = { year: "numeric", month: "long", day: "numeric" };
+      return date.toLocaleDateString("default", options);
+    }
+
+    function getWeekday(date) {
+      options = { weekday: "long" };
+      return date.toLocaleDateString("default", options);
+    }
+
+    function setNewRandomDay() {
+      let range = 400 * 365 * 24 * 60 * 60 * 1000; // 400 years
+      let center = Date.now();
+      if (futureOnly.checked) {
+        range /= 2;
+        center += range;
+      } else if (pastOnly.checked) {
+        range /= 2;
+        center -= range;
+      }
+      let rand = center + Math.random() * range - Math.random() * range;
+      theDate = new Date(rand);
+      dateDisplay.innerText = getFormattedDate(theDate);
+    }
+
+    function guessDay(weekday) {
+      if (weekday == getWeekday(theDate)) {
+        correct++;
+        document.getElementById(weekday).classList.remove("correct");
+        document.getElementById(weekday).classList.remove("wrong");
+        setTimeout(() => document.getElementById(weekday).classList.add("correct"), 0);
+      } else {
+        wrong++;
+        document.getElementById(weekday).classList.remove("correct");
+        document.getElementById(weekday).classList.remove("wrong");
+        setTimeout(() => document.getElementById(weekday).classList.add("wrong"), 0);
+      }
+      correctDisplay.innerText = correct;
+      wrongDisplay.innerText = wrong;
+      setNewRandomDay();
+    }
+  </script>
+</html>
