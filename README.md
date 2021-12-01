@@ -1,4 +1,4 @@
-# Guess-The-Weekday
+# Guess The Weekday
 
 The <a href="https://en.wikipedia.org/wiki/Doomsday_rule">Doomsday Rule</a> is an algorithm that makes computing the day of the week for a given
 date possible (and easy). Every year has an "anchor" day of the week, or "doomsday" according to Conway, where many easy-to-remember dates fall.
