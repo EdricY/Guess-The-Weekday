@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Guess The Weekday!</title>
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet" />
     <style>
       html {
@@ -56,6 +56,18 @@
         border: 2px solid black;
         margin: 0.5%;
         cursor: pointer;
+      }
+
+      #doomsday-row {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        display: flex;
+      }
+      #doomsdayDisplayWrap {
+        display: none;
+      }
+      #showDoomsday:checked ~ #doomsdayDisplayWrap {
+        display: block;
       }
       @media (max-width: 500px) {
         #dayBtnsWrap {
@@ -121,6 +133,12 @@
       <label for="fullRange">Both</label>
     </div>
     <div>Right: <span id="correctDisplay">0</span>&nbsp;&nbsp;&nbsp; Wrong: <span id="wrongDisplay">0</span></div>
+    <div id="doomsday-row">
+      <input type="checkbox" id="showDoomsday" checked />
+      <label for="showDoomsday">The year's doomsday</label>
+      <span id="doomsdayDisplayWrap">: <span id="doomsdayDisplay"></span></span>
+    </div>
+
     <div id="dayBtnsWrap"></div>
     <div>How do I do this?</div>
     <p>
@@ -142,6 +160,7 @@
     const futureOnly = document.getElementById("futureOnly");
     const pastOnly = document.getElementById("pastOnly");
     const fullRange = document.getElementById("fullRange");
+    const doomsdayDisplay = document.getElementById("doomsdayDisplay");
     const WEEKDAYS = getWeekdaysArray();
     let theDate = new Date(Math.random() * Date.now());
     let correct = 0;
@@ -179,6 +198,11 @@
       return date.toLocaleDateString("default", options);
     }
 
+    function getDoomsday(date) {
+      const doomsday = new Date(date.getFullYear(), 2, 14); // pi day of the same year
+      return getWeekday(doomsday);
+    }
+
     function setNewRandomDay() {
       let range = 400 * 365 * 24 * 60 * 60 * 1000; // 400 years
       let center = Date.now();
@@ -192,14 +216,17 @@
       let rand = center + Math.random() * range - Math.random() * range;
       theDate = new Date(rand);
       dateDisplay.innerText = getFormattedDate(theDate);
+      doomsdayDisplay.innerText = getDoomsday(theDate);
     }
 
     function guessDay(weekday) {
+      //always flash correct day
+      const correctDay = getWeekday(theDate);
+      document.getElementById(correctDay).classList.remove("correct");
+      document.getElementById(correctDay).classList.remove("wrong");
+      setTimeout(() => document.getElementById(correctDay).classList.add("correct"), 0);
       if (weekday == getWeekday(theDate)) {
         correct++;
-        document.getElementById(weekday).classList.remove("correct");
-        document.getElementById(weekday).classList.remove("wrong");
-        setTimeout(() => document.getElementById(weekday).classList.add("correct"), 0);
       } else {
         wrong++;
         document.getElementById(weekday).classList.remove("correct");
